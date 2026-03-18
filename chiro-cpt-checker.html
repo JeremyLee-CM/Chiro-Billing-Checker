@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chiropractic Billing Conflict Checker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border2: #ccc9be;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #9c9a92;
+    --red: #c0392b; --red-bg: #fdf0ee; --red-border: #f5c6c0;
+    --amber: #b45309; --amber-bg: #fef8ee; --amber-border: #fad89a;
+    --blue: #1d5fa6; --blue-bg: #eef4fc; --blue-border: #b8d4f0;
+    --green: #2d7a3a; --green-bg: #edf7ef; --green-border: #b4debb;
+    --purple: #5b3d9e; --purple-bg: #f3f0fb; --purple-border: #cdc0f0;
+    --radius: 8px; --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--text);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: white; }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 400;
+  }
+
+  .header-note {
+    font-size: 12px;
+    color: var(--text3);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+
+  .tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .tab {
+    flex: 1; padding: 7px 10px;
+    font-size: 12px; font-weight: 500;
+    border: none; cursor: pointer;
+    background: var(--surface);
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .tab.active { background: var(--text); color: #fff; }
+  .tab:not(:last-child) { border-right: 1px solid var(--border); }
+
+  .payer-grid {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-bottom: 14px;
+  }
+
+  .payer-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.1s;
+  }
+
+  .payer-btn.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+
+  .input-row {
+    display: flex; gap: 6px; margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    flex: 1; padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus { border-color: var(--text); }
+
+  .btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: var(--surface2); }
+  .btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn.primary:hover { background: #333; }
+  .btn.danger { color: var(--red); border-color: var(--red-border); }
+  .btn.danger:hover { background: var(--red-bg); }
+
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .chip {
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    cursor: pointer;
+    color: var(--text2);
+    background: var(--surface2);
+    transition: all 0.1s;
+  }
+
+  .chip:hover { background: var(--text); color: #fff; border-color: var(--text); }
+  .chip.added { background: var(--surface2); color: var(--text3); cursor: default; text-decoration: line-through; }
+
+  .icd-chips {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .tags-box {
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 8px;
+    min-height: 50px;
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-bottom: 12px;
+    background: var(--surface2);
+  }
+
+  .tag {
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .tag .tag-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--text3);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tag button {
+    background: none; border: none;
+    cursor: pointer; color: var(--text3);
+    font-size: 14px; line-height: 1; padding: 0;
+    margin-left: 1px;
+  }
+
+  .tag button:hover { color: var(--red); }
+
+  .tag.icd { background: var(--blue-bg); border-color: var(--blue-border); }
+  .tag.icd .tag-desc { color: var(--blue); }
+
+  .empty-tags {
+    font-size: 12px; color: var(--text3);
+    align-self: center; padding: 2px 4px;
+  }
+
+  .upload-zone {
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    transition: background 0.1s;
+    margin-bottom: 10px;
+  }
+
+  .upload-zone:hover { background: var(--surface2); }
+  .upload-zone input { display: none; }
+
+  .check-row {
+    display: flex; gap: 6px;
+  }
+
+  .results-col { min-width: 0; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 22px; font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 10px; color: var(--text3);
+    margin-top: 3px; text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .filter-row {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .filter-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+
+  .result-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    transition: box-shadow 0.15s;
+  }
+
+  .result-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .result-card.deny { border-left: 3px solid var(--red); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .result-card.warn { border-left: 3px solid var(--amber); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .result-card.info { border-left: 3px solid var(--blue); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .result-card.ok { border-left: 3px solid var(--green); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .result-card.icd-result { border-left: 3px solid var(--purple); border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+
+  .result-header {
+    display: flex; align-items: center;
+    gap: 6px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+
+  .badge {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  .badge.deny { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .badge.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+  .badge.info { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .badge.ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge.icd { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+  .badge.modifier { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+  .result-codes {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--text);
+  }
+
+  .meta-tag {
+    font-size: 10px; padding: 1px 6px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--text3);
+    border: 1px solid var(--border);
+  }
+
+  .result-reason {
+    font-size: 13px; color: var(--text2);
+    line-height: 1.55; margin-top: 2px;
+  }
+
+  .result-fix {
+    font-size: 12px; color: var(--text2);
+    margin-top: 8px; padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    line-height: 1.55;
+  }
+
+  .result-fix strong { color: var(--text); font-weight: 500; }
+
+  .modifier-box {
+    margin-top: 8px; padding: 8px 10px;
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    border-radius: var(--radius);
+    font-size: 12px; color: var(--green);
+    line-height: 1.5;
+  }
+
+  .modifier-box strong { font-weight: 600; }
+
+  .section-divider {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text3); margin: 14px 0 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+
+  .empty-state {
+    text-align: center; padding: 32px 20px;
+    color: var(--text3); font-size: 14px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .empty-state p { margin-top: 6px; font-size: 12px; }
+
+  footer {
+    font-size: 11px; color: var(--text3);
+    margin-top: 16px; line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .upload-preview {
+    font-size: 12px; color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  .label-sm {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text3); margin-bottom: 6px; margin-top: 12px;
+  }
+
+  .hidden { display: none !important; }
+
+  .scroll-results { max-height: 75vh; overflow-y: auto; padding-right: 2px; }
+
+  .icd-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">Chiropractic Billing Checker</div>
+      <div class="logo-sub">CPT · ICD-10 · Modifier guidance</div>
+    </div>
+  </div>
+  <span class="header-note">Medicare · Medicaid · BCBS · Commercial</span>
+</header>
+
+<div class="main">
+  <div class="grid">
+
+    <!-- LEFT PANEL -->
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Payer</div>
+        <div class="payer-grid" id="payerRow">
+          <button class="payer-btn active" onclick="setPayer(this,'all')">All payers</button>
+          <button class="payer-btn" onclick="setPayer(this,'medicare')">Medicare</button>
+          <button class="payer-btn" onclick="setPayer(this,'medicaid')">Medicaid</button>
+          <button class="payer-btn" onclick="setPayer(this,'bcbs')">BCBS</button>
+          <button class="payer-btn" onclick="setPayer(this,'commercial')">Commercial</button>
+        </div>
+
+        <div class="card-title">CPT Codes</div>
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('manual',this)">Type manually</button>
+          <button class="tab" onclick="switchTab('upload',this)">Upload file</button>
+        </div>
+
+        <div id="manualTab">
+          <div class="input-row">
+            <input type="text" id="cptInput" placeholder="Enter CPT code…" maxlength="10"/>
+            <button class="btn" onclick="addCPT()">Add</button>
+          </div>
+          <div class="label-sm">Quick add CPT</div>
+          <div class="chips" id="cptChips">
+            <span class="chip" onclick="quickCPT('98940')">98940</span>
+            <span class="chip" onclick="quickCPT('98941')">98941</span>
+            <span class="chip" onclick="quickCPT('98942')">98942</span>
+            <span class="chip" onclick="quickCPT('98943')">98943</span>
+            <span class="chip" onclick="quickCPT('97110')">97110</span>
+            <span class="chip" onclick="quickCPT('97012')">97012</span>
+            <span class="chip" onclick="quickCPT('97014')">97014</span>
+            <span class="chip" onclick="quickCPT('97032')">97032</span>
+            <span class="chip" onclick="quickCPT('97035')">97035</span>
+            <span class="chip" onclick="quickCPT('97140')">97140</span>
+            <span class="chip" onclick="quickCPT('97530')">97530</span>
+            <span class="chip" onclick="quickCPT('97010')">97010</span>
+            <span class="chip" onclick="quickCPT('99202')">99202</span>
+            <span class="chip" onclick="quickCPT('99203')">99203</span>
+            <span class="chip" onclick="quickCPT('99212')">99212</span>
+            <span class="chip" onclick="quickCPT('99213')">99213</span>
+            <span class="chip" onclick="quickCPT('99214')">99214</span>
+            <span class="chip" onclick="quickCPT('S8990')">S8990</span>
+            <span class="chip" onclick="quickCPT('97024')">97024</span>
+            <span class="chip" onclick="quickCPT('97016')">97016</span>
+          </div>
+        </div>
+
+        <div id="uploadTab" class="hidden">
+          <div class="upload-zone" onclick="document.getElementById('fileIn').click()">
+            <input type="file" id="fileIn" accept=".csv,.txt" onchange="handleFile(event)"/>
+            <div style="font-size:24px;margin-bottom:6px">↑</div>
+            <div style="font-weight:500">Click to upload CSV or TXT</div>
+            <div style="font-size:12px;margin-top:3px">One code per line or comma-separated</div>
+          </div>
+          <p class="upload-preview" id="uploadPreview"></p>
+        </div>
+
+        <div class="label-sm">CPT codes added</div>
+        <div class="tags-box" id="cptTags"><span class="empty-tags">No CPT codes yet</span></div>
+
+        <!-- ICD-10 SECTION -->
+        <div class="icd-section">
+          <div class="card-title">ICD-10 Diagnosis Codes</div>
+          <div class="input-row">
+            <input type="text" id="icdInput" placeholder="Enter ICD-10 code…" maxlength="10"/>
+            <button class="btn" onclick="addICD()">Add</button>
+          </div>
+          <div class="label-sm">Quick add ICD-10</div>
+          <div class="icd-chips">
+            <span class="chip" onclick="quickICD('M54.50')">M54.50</span>
+            <span class="chip" onclick="quickICD('M54.6')">M54.6</span>
+            <span class="chip" onclick="quickICD('M54.2')">M54.2</span>
+            <span class="chip" onclick="quickICD('M62.830')">M62.830</span>
+            <span class="chip" onclick="quickICD('M51.16')">M51.16</span>
+            <span class="chip" onclick="quickICD('M51.36')">M51.36</span>
+            <span class="chip" onclick="quickICD('M54.3')">M54.3</span>
+            <span class="chip" onclick="quickICD('M54.16')">M54.16</span>
+            <span class="chip" onclick="quickICD('M47.816')">M47.816</span>
+            <span class="chip" onclick="quickICD('G57.02')">G57.02</span>
+            <span class="chip" onclick="quickICD('M79.3')">M79.3</span>
+            <span class="chip" onclick="quickICD('M79.10')">M79.10</span>
+            <span class="chip" onclick="quickICD('R25.2')">R25.2</span>
+            <span class="chip" onclick="quickICD('M54.4')">M54.4</span>
+          </div>
+          <div class="label-sm">ICD-10 codes added</div>
+          <div class="tags-box" id="icdTags"><span class="empty-tags">No ICD-10 codes yet</span></div>
+        </div>
+
+        <div class="check-row" style="margin-top:14px">
+          <button class="btn primary" style="flex:1" onclick="runCheck()">Check for conflicts</button>
+          <button class="btn danger" onclick="clearAll()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="results-col">
+      <div id="resultsArea">
+        <div class="empty-state">
+          <div style="font-size:32px">⚕</div>
+          <div style="font-weight:500;margin-top:8px;color:var(--text2)">Add codes and click Check</div>
+          <p>CPT bundling, ICD-10 Excludes1 conflicts,<br/>modifier suggestions, and denial reasons will appear here.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const cptCodes=[], icdCodes=[];
+let activePayer='all';
+
+const cptInfo={
+  '98940':'CMT spinal 1-2 regions','98941':'CMT spinal 3-4 regions','98942':'CMT spinal 5 regions',
+  '98943':'CMT extraspinal','97110':'Therapeutic exercises','97012':'Mechanical traction',
+  '97014':'E-stim unattended','97032':'E-stim attended','97035':'Ultrasound',
+  '97140':'Manual therapy','97530':'Therapeutic activities','97010':'Hot/cold packs',
+  '97016':'Vasopneumatic','97018':'Paraffin bath','97022':'Whirlpool','97024':'Diathermy',
+  '97026':'Infrared','97033':'Iontophoresis','97034':'Contrast baths','97036':'Hubbard tank',
+  '97150':'Group therapeutic','97750':'Physical performance','97542':'Wheelchair mgmt',
+  '99202':'New pt low','99203':'New pt moderate','99204':'New pt high','99205':'New pt high+',
+  '99212':'Est pt minimal','99213':'Est pt low','99214':'Est pt moderate','99215':'Est pt high',
+  'S8990':'Maintenance therapy','99358':'Prolonged non-F2F','97039':'Unlisted modality',
+  '97003':'OT eval','97004':'OT re-eval','97161':'PT eval low','97162':'PT eval moderate',
+  '97163':'PT eval high','97164':'PT re-eval'
+};
+
+const icdInfo={
+  'M54.50':'Low back pain, unspecified','M54.51':'Vertebrogenic low back pain',
+  'M54.59':'Other low back pain','M54.6':'Pain in thoracic spine',
+  'M54.2':'Cervicalgia','M54.3':'Sciatica','M54.4':'Lumbago with sciatica',
+  'M54.16':'Radiculopathy, lumbar region','M54.12':'Radiculopathy, cervical region',
+  'M62.830':'Muscle spasm of back','M62.831':'Muscle spasm of calf',
+  'M51.16':'Intervertebral disc degeneration, lumbar','M51.36':'Disc degeneration, lumbar',
+  'M51.362':'Disc degeneration, lumbar with discogenic/LE pain',
+  'M47.816':'Spondylosis with radiculopathy, lumbar',
+  'G57.02':'Sciatic nerve lesion, left lower limb','G57.01':'Sciatic nerve lesion, right',
+  'M79.3':'Panniculitis','M79.10':'Myalgia, unspecified','M79.18':'Myalgia, other site',
+  'R25.2':'Cramp and spasm','M54.4':'Lumbago with sciatica',
+  'M54.41':'Lumbago with sciatica, right','M54.42':'Lumbago with sciatica, left',
+  'M54.5':'Low back pain (legacy)','Z41.8':'Encounter for procedure, other purpose',
+  'M47.812':'Spondylosis, cervical region'
+};
+
+// CPT conflict rules
+const cptConflicts=[
+  {codes:['98940','98941'],type:'deny',cat:'mutually_exclusive',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'CMT codes 98940 and 98941 are mutually exclusive. Only one spinal CMT may be billed per date of service.',
+   fix:'Bill only one CMT code reflecting the total number of spinal regions treated.',
+   modifiers:[]},
+  {codes:['98940','98942'],type:'deny',cat:'mutually_exclusive',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'98940 and 98942 are mutually exclusive — only one spinal CMT per date of service.',
+   fix:'Select the single CMT code matching the number of regions treated.',
+   modifiers:[]},
+  {codes:['98941','98942'],type:'deny',cat:'mutually_exclusive',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'98941 and 98942 are mutually exclusive per NCCI edits.',
+   fix:'Bill one CMT code based on total regions treated.',
+   modifiers:[]},
+  {codes:['98940','97140'],type:'deny',cat:'ncci',payers:['medicare'],
+   reason:'Medicare NCCI bundles manual therapy (97140) into CMT. Not separately payable under Medicare.',
+   fix:'Remove 97140 from Medicare CMT claims. Manual therapy is considered integral to the chiropractic service.',
+   modifiers:[]},
+  {codes:['98941','97140'],type:'deny',cat:'ncci',payers:['medicare'],
+   reason:'Medicare NCCI bundles 97140 with CMT codes 98940-98942.',
+   fix:'Remove 97140 for Medicare claims. Commercial payers may allow with proper modifier.',
+   modifiers:[]},
+  {codes:['98942','97140'],type:'deny',cat:'ncci',payers:['medicare'],
+   reason:'Medicare NCCI: 97140 bundled into CMT and not separately reimbursable.',
+   fix:'Remove 97140 from Medicare claims.',
+   modifiers:[]},
+  {codes:['98940','97140'],type:'warn',cat:'ncci',payers:['medicaid','bcbs','commercial'],
+   reason:'97140 with CMT is frequently bundled or denied by BCBS/commercial as duplicative.',
+   fix:'Append modifier 59 to 97140 only if performed on a distinctly different anatomical region with separate documentation.',
+   modifiers:[{mod:'59',desc:'Modifier 59 on 97140 — Distinct procedural service. Use only if performed on a different anatomical region from the CMT with separate documentation.'}]},
+  {codes:['98941','97140'],type:'warn',cat:'ncci',payers:['medicaid','bcbs','commercial'],
+   reason:'97140 with CMT may be denied by commercial payers without modifier 59.',
+   fix:'Use modifier 59 on 97140 with documentation of distinct service.',
+   modifiers:[{mod:'59',desc:'Modifier 59 on 97140 — attach to the manual therapy code, document a different treatment region from the CMT.'}]},
+  {codes:['97014','97032'],type:'deny',cat:'mutually_exclusive',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'Unattended (97014) and attended (97032) electrical stimulation cannot both be billed same date — same modality, different attendance.',
+   fix:'Bill 97032 if provider was in constant attendance; 97014 if unattended.',
+   modifiers:[]},
+  {codes:['98940','99213'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'E&M 99213 same day as CMT requires modifier 25 on the E&M or it will be denied as bundled into the adjustment.',
+   fix:'Append modifier 25 to 99213. Document a separate, significant E&M beyond the chiropractic encounter.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99213 — Significant, separately identifiable E&M service. Documentation must show a separate clinical decision-making process distinct from the CMT visit.'}]},
+  {codes:['98940','99212'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'E&M 99212 with CMT requires modifier 25 on the E&M.',
+   fix:'Append modifier 25 to 99212 with separate documentation.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99212 — attach to the E&M code, not the CMT code.'}]},
+  {codes:['98940','99214'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'E&M 99214 billed with CMT requires modifier 25 to avoid bundling denial.',
+   fix:'Append modifier 25 to 99214 with documentation of separate high-level decision-making.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99214 — requires thorough documentation of a complex E&M visit independent of the CMT service.'}]},
+  {codes:['98941','99213'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'99213 billed same day as CMT (98941) needs modifier 25 on the E&M.',
+   fix:'Add modifier 25 to 99213.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99213'}]},
+  {codes:['98941','99214'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'99214 with CMT requires modifier 25 to avoid bundling.',
+   fix:'Add modifier 25 to 99214 with supporting documentation.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99214'}]},
+  {codes:['98942','99213'],type:'warn',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'E&M 99213 with 5-region CMT (98942) requires modifier 25 on the E&M.',
+   fix:'Append modifier 25 to 99213.',
+   modifiers:[{mod:'25',desc:'Modifier 25 on 99213'}]},
+  {codes:['98940','99202'],type:'info',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'New patient E&M (99202) with CMT — modifier 25 is generally not required for new patients but documentation must support both services.',
+   fix:'Ensure E&M documents history, exam, and MDM independently from the CMT.',
+   modifiers:[]},
+  {codes:['98940','99203'],type:'info',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'New patient E&M (99203) with CMT — document both services separately.',
+   fix:'Verify payer requirements. Document E&M independently.',
+   modifiers:[]},
+  {codes:['S8990','98940'],type:'deny',cat:'chiro',payers:['medicare'],
+   reason:'S8990 is not a valid Medicare code. Medicare does not cover maintenance therapy under S8990.',
+   fix:'Replace S8990 with CMT code (98940-98942) + modifier GA. Ensure ABN (CMS-R-131) is signed by the patient.',
+   modifiers:[{mod:'GA',desc:'Modifier GA on CMT code — indicates a required ABN is on file. Patient accepts financial responsibility for maintenance care visits under Medicare.'}]},
+  {codes:['S8990','98941'],type:'deny',cat:'chiro',payers:['medicare'],
+   reason:'S8990 is not accepted by Medicare. Maintenance CMT must use CMT code + modifier GA.',
+   fix:'Remove S8990. Bill 98941 + GA with signed ABN.',
+   modifiers:[{mod:'GA',desc:'Modifier GA on CMT code — ABN must be on file for Medicare maintenance visits.'}]},
+  {codes:['S8990','99213'],type:'warn',cat:'chiro',payers:['bcbs','commercial'],
+   reason:'Maintenance therapy (S8990) with E&M is questioned by commercial payers — maintenance visits typically do not require a separate E&M.',
+   fix:'Verify payer policy. If E&M is truly separate, document distinct MDM.',
+   modifiers:[]},
+  {codes:['97035','97024'],type:'warn',cat:'ncci',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'Ultrasound (97035) and diathermy (97024) are both deep heating modalities — may be denied as duplicative.',
+   fix:'Document distinct treatment areas and separate therapeutic rationale.',
+   modifiers:[{mod:'59',desc:'Modifier 59 on secondary deep heating code — document different anatomical areas of application.'}]},
+  {codes:['97010','97018'],type:'warn',cat:'ncci',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'Hot/cold packs (97010) and paraffin bath (97018) are both superficial thermal modalities — may be bundled.',
+   fix:'Document distinct goals and application areas for each modality.',
+   modifiers:[]},
+  {codes:['97110','97530'],type:'info',cat:'ncci',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'97110 and 97530 may both be billed same day but must have distinct goals. 97110 = skilled exercises; 97530 = functional task training.',
+   fix:'Clearly document different goals, activities, and time for each code.',
+   modifiers:[]},
+  {codes:['97012','97140'],type:'warn',cat:'ncci',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'Mechanical traction (97012) and manual therapy (97140) to the same region may be considered duplicative.',
+   fix:'Document distinct anatomical regions or clearly different therapeutic purposes.',
+   modifiers:[{mod:'59',desc:'Modifier 59 on 97140 if performed on a different anatomical area from the traction.'}]},
+  {codes:['98940','97012'],type:'info',cat:'chiro',payers:['medicare','medicaid'],
+   reason:'Mechanical traction (97012) with CMT may be questioned by Medicare/Medicaid as integral to chiropractic care.',
+   fix:'Document the distinct medical necessity for traction addressing a different condition or region from the CMT.',
+   modifiers:[]},
+  {codes:['97014','97010'],type:'info',cat:'ncci',payers:['medicare','medicaid'],
+   reason:'Hot/cold packs (97010) with unattended e-stim (97014) — Medicare/Medicaid may bundle passive unattended modalities.',
+   fix:'Document distinct treatment areas and time for each modality.',
+   modifiers:[]},
+  {codes:['99358','98940'],type:'warn',cat:'chiro',payers:['medicare','bcbs','commercial'],
+   reason:'Prolonged non-face-to-face service (99358) is rarely appropriate with CMT and will likely be denied.',
+   fix:'Remove 99358 unless 30+ minutes of non-face-to-face time is clearly documented separate from the CMT encounter.',
+   modifiers:[]},
+  {codes:['97003','98940'],type:'deny',cat:'mutually_exclusive',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'OT evaluation (97003) is not within a chiropractor\'s scope of practice and should not be billed with CMT.',
+   fix:'Remove 97003. Use chiropractic evaluation codes (99202-99215 with modifier 25 if same day as CMT).',
+   modifiers:[]},
+  {codes:['97161','98940'],type:'warn',cat:'chiro',payers:['medicare','medicaid'],
+   reason:'PT evaluation (97161) billed by a chiropractor alongside CMT may be denied — outside typical chiropractic scope.',
+   fix:'Verify scope of practice and payer policy. Use E&M codes with modifier 25 instead.',
+   modifiers:[]},
+  {codes:['98940','98943'],type:'info',cat:'chiro',payers:['medicare','medicaid','bcbs','commercial'],
+   reason:'Spinal CMT (98940) and extraspinal CMT (98943) can be billed together when both spinal and extraspinal regions are treated — but documentation must support both.',
+   fix:'Document both spinal and extraspinal regions treated. This combination is generally allowed.',
+   modifiers:[]},
+];
+
+// ICD-10 conflict rules (Excludes1 and chiro-specific)
+const icdConflicts=[
+  {codes:['M54.6','M62.830'],type:'excludes1',
+   reason:'Pain in thoracic spine (M54.6) and muscle spasm of back (M62.830) cannot be billed together per ICD-10 Excludes1 rules. BCBS and commercial payers flag this combination.',
+   fix:'Use only the most specific code. M62.830 (muscle spasm) is typically preferred as it is more specific than general spine pain.',
+   cpt:null},
+  {codes:['M54.50','M54.3'],type:'excludes1',
+   reason:'Low back pain (M54.50) and sciatica (M54.3) cannot be billed together — Excludes1 relationship. Sciatica already implies back pain.',
+   fix:'Use M54.3 alone if sciatica is the primary diagnosis. Do not add M54.50 alongside it.'},
+  {codes:['M54.59','M54.3'],type:'excludes1',
+   reason:'Low back pain (M54.59) and sciatica (M54.3) — Excludes1 violation. Sciatica subsumes the general low back pain.',
+   fix:'Use M54.3 (sciatica) as the primary diagnosis. Remove M54.50/M54.59.'},
+  {codes:['M54.50','M54.41'],type:'excludes1',
+   reason:'Low back pain (M54.50) and lumbago with sciatica right (M54.41) — Excludes1 violation.',
+   fix:'Use M54.41 only. Lumbago with sciatica already captures the low back pain component.'},
+  {codes:['M54.50','M54.42'],type:'excludes1',
+   reason:'Low back pain (M54.50) and lumbago with sciatica left (M54.42) — Excludes1 violation.',
+   fix:'Use M54.42 only.'},
+  {codes:['M54.50','M54.4'],type:'excludes1',
+   reason:'Low back pain and lumbago with sciatica (M54.4) — Excludes1 violation.',
+   fix:'Use M54.4 alone.'},
+  {codes:['M54.6','M51.16'],type:'excludes1',
+   reason:'Pain in thoracic spine (M54.6) with intervertebral disc degeneration (M51.16) — if disc disorder is causing the thoracic pain, M54.6 is excluded.',
+   fix:'If the pain is due to disc pathology, use M51.16 alone. M54.6 is only appropriate when no disc disorder is responsible.'},
+  {codes:['M54.2','M50.1'],type:'excludes1',
+   reason:'Cervicalgia (M54.2) and cervical disc disorder (M50.1) — Excludes1 violation. Cervical disc disorder already includes the cervicalgia component.',
+   fix:'Use the disc disorder code (M50.x) alone when a disc disorder causes the cervical pain.'},
+  {codes:['M54.16','G57.02'],type:'excludes1',
+   reason:'Radiculopathy lumbar (M54.16) and sciatic nerve lesion (G57.02) — Excludes1 violation. Sciatic nerve lesion implies radiculopathy.',
+   fix:'Use G57.02 (more specific) if the sciatic nerve lesion is confirmed. Remove M54.16.'},
+  {codes:['M54.16','G57.01'],type:'excludes1',
+   reason:'Radiculopathy lumbar (M54.16) and sciatic nerve lesion right (G57.01) — Excludes1 violation.',
+   fix:'Use G57.01 (sciatic nerve lesion) as the more specific code. Remove M54.16.'},
+  {codes:['M62.830','M79.10'],type:'excludes1',
+   reason:'Muscle spasm of back (M62.830) and myalgia unspecified (M79.10) — Excludes1 violation. These cannot be coded together.',
+   fix:'Use M62.830 (more specific for back spasm) and remove M79.10.'},
+  {codes:['M62.830','M79.18'],type:'excludes1',
+   reason:'Muscle spasm of back (M62.830) and myalgia other site (M79.18) — Excludes1 violation.',
+   fix:'Use M62.830 alone. Do not combine with myalgia codes.'},
+  {codes:['M62.830','R25.2'],type:'excludes1',
+   reason:'Muscle spasm of back (M62.830) and cramp and spasm (R25.2) — Excludes1 violation. R25.2 is a symptoms code; M62.830 is a definitive diagnosis.',
+   fix:'Use M62.830. R25.2 should only be used when no definitive diagnosis is known.'},
+  {codes:['M54.3','M51.362'],type:'excludes1',
+   reason:'Sciatica (M54.3) and disc degeneration with discogenic/LE pain (M51.362) — Excludes1 violation per 2025 ICD-10 updates.',
+   fix:'Use M51.362 if imaging confirms disc degeneration causing the sciatica. Remove M54.3.'},
+  {codes:['M54.4','M51.362'],type:'excludes1',
+   reason:'Lumbago with sciatica (M54.4) and disc degeneration with LE pain (M51.362) — Excludes1 violation.',
+   fix:'Use M51.362 if disc pathology is confirmed. Remove M54.4.'},
+  {codes:['M54.50','M51.36'],type:'excludes1',
+   reason:'Low back pain (M54.50) with intervertebral disc degeneration lumbar (M51.36) — Excludes1 violation.',
+   fix:'If disc pathology is causing the low back pain, use M51.36 series only.'},
+  {codes:['M54.6','M54.50'],type:'warn',
+   reason:'Thoracic spine pain (M54.6) and low back pain (M54.50) together may be questioned by payers. Ensure both regions are clearly documented as separate conditions.',
+   fix:'Acceptable only if both regions are independently documented. Ensure the clinical notes specify separate complaints for thoracic and lumbar regions.'},
+  {codes:['M54.2','M54.50'],type:'warn',
+   reason:'Cervicalgia (M54.2) and low back pain (M54.50) are allowed together but may trigger payer review — ensure both regions are documented.',
+   fix:'Both codes are acceptable if separately documented. Common for multi-region chiropractic visits.'},
+  {codes:['M54.3','M54.50'],type:'excludes1',
+   reason:'Sciatica (M54.3) and low back pain (M54.50) — Excludes1 violation. Sciatica subsumes low back pain.',
+   fix:'Use M54.3 alone.'},
+];
+
+// Modifier reference
+const modifierRef={
+  '25':'Significant, separately identifiable E&M service on the same day as another procedure. Attach to the E&M code (99212-99215), not the procedure code.',
+  '59':'Distinct procedural service — use when two codes would normally be bundled but are performed in distinct anatomical areas or separate encounters with supporting documentation.',
+  'GA':'Waiver of liability — indicates a signed ABN is on file. Required for Medicare maintenance care CMT visits.',
+  'GP':'Services delivered under an outpatient physical therapy plan of care.',
+  'GY':'Item or service not covered by Medicare — used when billing a service Medicare never covers so patient can bill supplemental insurance.',
+  'KX':'Requirements specified in the medical policy have been met — used for PT/OT/speech services when documentation supports medical necessity.',
+  '76':'Repeat procedure by the same physician on the same day.',
+  '77':'Repeat procedure by another physician on the same day.',
+  'AT':'Acute treatment — REQUIRED for Medicare CMT claims (98940-98942). Without modifier AT, Medicare will deny the CMT claim.',
+  '52':'Reduced services — service partially performed.',
+};
+
+function setPayer(btn,p){
+  document.querySelectorAll('.payer-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activePayer=p;
+  clearResults();
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('manualTab').classList.toggle('hidden',tab!=='manual');
+  document.getElementById('uploadTab').classList.toggle('hidden',tab!=='upload');
+}
+
+function addCPT(){
+  const inp=document.getElementById('cptInput');
+  const v=inp.value.trim().replace(/[^0-9A-Za-z]/g,'').toUpperCase();
+  if(v&&!cptCodes.includes(v))cptCodes.push(v);
+  inp.value=''; renderCPT(); clearResults();
+}
+
+function quickCPT(c){
+  if(!cptCodes.includes(c))cptCodes.push(c);
+  renderCPT(); clearResults();
+  document.querySelectorAll('#cptChips .chip').forEach(ch=>{
+    if(ch.textContent===c)ch.classList.add('added');
+  });
+}
+
+function removeCPT(c){
+  const i=cptCodes.indexOf(c);
+  if(i>-1)cptCodes.splice(i,1);
+  renderCPT(); clearResults();
+  document.querySelectorAll('#cptChips .chip').forEach(ch=>{
+    if(ch.textContent===c)ch.classList.remove('added');
+  });
+}
+
+function addICD(){
+  const inp=document.getElementById('icdInput');
+  const v=inp.value.trim().replace(/[^0-9A-Za-z.]/g,'').toUpperCase();
+  if(v&&!icdCodes.includes(v))icdCodes.push(v);
+  inp.value=''; renderICD(); clearResults();
+}
+
+function quickICD(c){
+  if(!icdCodes.includes(c))icdCodes.push(c);
+  renderICD(); clearResults();
+}
+
+function removeICD(c){
+  const i=icdCodes.indexOf(c);
+  if(i>-1)icdCodes.splice(i,1);
+  renderICD(); clearResults();
+}
+
+function renderCPT(){
+  const el=document.getElementById('cptTags');
+  if(!cptCodes.length){el.innerHTML='<span class="empty-tags">No CPT codes yet</span>';return;}
+  el.innerHTML=cptCodes.map(c=>`<span class="tag"><strong>${c}</strong>${cptInfo[c]?`<span class="tag-desc">${cptInfo[c]}</span>`:''}<button onclick="removeCPT('${c}')">×</button></span>`).join('');
+}
+
+function renderICD(){
+  const el=document.getElementById('icdTags');
+  if(!icdCodes.length){el.innerHTML='<span class="empty-tags">No ICD-10 codes yet</span>';return;}
+  el.innerHTML=icdCodes.map(c=>`<span class="tag icd"><strong>${c}</strong>${icdInfo[c]?`<span class="tag-desc" style="color:var(--blue)">${icdInfo[c]}</span>`:''}<button onclick="removeICD('${c}')">×</button></span>`).join('');
+}
+
+function clearAll(){
+  cptCodes.length=0; icdCodes.length=0;
+  renderCPT(); renderICD(); clearResults();
+  document.getElementById('uploadPreview').textContent='';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('added'));
+}
+
+function clearResults(){
+  document.getElementById('resultsArea').innerHTML=`<div class="empty-state"><div style="font-size:32px">⚕</div><div style="font-weight:500;margin-top:8px;color:var(--text2)">Add codes and click Check</div><p>CPT bundling, ICD-10 Excludes1 conflicts,<br/>modifier suggestions, and denial reasons will appear here.</p></div>`;
+}
+
+function handleFile(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const extracted=ev.target.result.split(/[\n,\r\t;]+/).map(s=>s.trim().replace(/[^0-9A-Za-z.]/g,'')).filter(s=>s.length>=4&&s.length<=10).map(s=>s.toUpperCase());
+    let added=0;
+    extracted.forEach(c=>{
+      if(c.match(/^[A-Z][0-9]/)){if(!icdCodes.includes(c)){icdCodes.push(c);added++;}}
+      else if(!cptCodes.includes(c)){cptCodes.push(c);added++;}
+    });
+    document.getElementById('uploadPreview').textContent=`Loaded ${extracted.length} codes (${added} added)`;
+    renderCPT(); renderICD(); clearResults();
+  };
+  reader.readAsText(file);
+}
+
+function matchPayer(rule){
+  if(activePayer==='all')return true;
+  return rule.payers&&rule.payers.includes(activePayer);
+}
+
+function runCheck(){
+  const res=document.getElementById('resultsArea');
+  const totalCodes=cptCodes.length+icdCodes.length;
+  if(totalCodes<2&&!(cptCodes.length>=1&&icdCodes.length>=1)){
+    res.innerHTML='<div class="empty-state"><p style="color:var(--red)">Add at least 2 codes (CPT or ICD-10) to check for conflicts.</p></div>';
+    return;
+  }
+
+  const cptFound=cptConflicts.filter(r=>r.codes.every(c=>cptCodes.includes(c))&&matchPayer(r));
+  const icdFound=icdConflicts.filter(r=>r.codes.every(c=>icdCodes.includes(c)));
+
+  // Check for modifier AT (Medicare CMT)
+  const needsAT=activePayer==='medicare'||activePayer==='all';
+  const hasCMT=cptCodes.some(c=>['98940','98941','98942'].includes(c));
+  const atNote=needsAT&&hasCMT;
+
+  const denials=cptFound.filter(f=>f.type==='deny').length + icdFound.filter(f=>f.type==='excludes1').length;
+  const warns=cptFound.filter(f=>f.type==='warn').length + icdFound.filter(f=>f.type==='warn').length;
+  const infos=cptFound.filter(f=>f.type==='info').length;
+  const mods=[...new Set(cptFound.flatMap(f=>f.modifiers||[]).map(m=>m.mod))];
+
+  let html=`<div class="summary-grid">
+    <div class="stat"><div class="stat-num" style="color:var(--red)">${denials}</div><div class="stat-lbl">Likely denials</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--amber)">${warns}</div><div class="stat-lbl">Warnings</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--blue)">${infos}</div><div class="stat-lbl">Notes</div></div>
+    <div class="stat"><div class="stat-num">${mods.length+(atNote?1:0)}</div><div class="stat-lbl">Modifiers needed</div></div>
+  </div>`;
+
+  const allResults=cptFound.length+icdFound.length;
+
+  if(allResults>0){
+    html+=`<div class="filter-row">
+      <button class="filter-btn active" onclick="filterRes('all',this)">All (${allResults+(atNote?1:0)})</button>
+      ${denials?`<button class="filter-btn" onclick="filterRes('deny',this)">Denials (${denials})</button>`:''}
+      ${warns?`<button class="filter-btn" onclick="filterRes('warn',this)">Warnings (${warns})</button>`:''}
+      ${infos?`<button class="filter-btn" onclick="filterRes('info',this)">Notes (${infos})</button>`:''}
+      ${(mods.length||atNote)?`<button class="filter-btn" onclick="filterRes('modifier',this)">Modifiers (${mods.length+(atNote?1:0)})</button>`:''}
+    </div>`;
+  }
+
+  html+='<div class="scroll-results" id="resultList">';
+
+  // AT modifier alert for Medicare
+  if(atNote){
+    html+=`<div class="result-card info" data-type="modifier">
+      <div class="result-header">
+        <span class="badge info">Required</span>
+        <span class="result-codes">98940 / 98941 / 98942</span>
+        <span class="meta-tag">Medicare</span>
+      </div>
+      <div class="result-reason">Modifier AT is required on ALL Medicare CMT claims (98940-98942). Without modifier AT, Medicare will automatically deny the CMT claim.</div>
+      <div class="modifier-box"><strong>Modifier AT</strong> — Acute treatment. Must be appended to the CMT procedure code on every Medicare claim. Indicates the service is for active/corrective treatment, not maintenance. ${modifierRef['AT']}</div>
+    </div>`;
+  }
+
+  if(cptFound.length>0){
+    if(icdFound.length>0) html+=`<div class="section-divider">CPT conflicts</div>`;
+    for(const f of cptFound){
+      const catLabel={'ncci':'NCCI Bundling','mutually_exclusive':'Mutually Exclusive','chiro':'Chiro-Specific'}[f.cat]||f.cat;
+      const payerLabels=(f.payers||[]).map(p=>p==='all'?'All':p.charAt(0).toUpperCase()+p.slice(1)).join(', ');
+      const typeClass=f.type==='deny'?'deny':f.type==='warn'?'warn':'info';
+      const typeLabel=f.type==='deny'?'Likely Denial':f.type==='warn'?'Warning':'Note';
+      const hasMods=f.modifiers&&f.modifiers.length>0;
+      const dataType=hasMods?`${f.type} modifier`:f.type;
+      html+=`<div class="result-card ${typeClass}" data-type="${dataType}">
+        <div class="result-header">
+          <span class="badge ${typeClass}">${typeLabel}</span>
+          <span class="result-codes">${f.codes.join(' + ')}</span>
+          <span class="meta-tag">${catLabel}</span>
+          <span class="meta-tag">${payerLabels}</span>
+          ${hasMods?`<span class="badge modifier">Modifier needed</span>`:''}
+        </div>
+        <div class="result-reason">${f.reason}</div>
+        <div class="result-fix"><strong>Fix:</strong> ${f.fix}</div>
+        ${hasMods?f.modifiers.map(m=>`<div class="modifier-box"><strong>Modifier ${m.mod}</strong> — ${m.desc}<br/><span style="font-size:11px;color:var(--text3);margin-top:3px;display:block">${modifierRef[m.mod]||''}</span></div>`).join(''):''}
+      </div>`;
+    }
+  }
+
+  if(icdFound.length>0){
+    if(cptFound.length>0) html+=`<div class="section-divider">ICD-10 conflicts</div>`;
+    for(const f of icdFound){
+      const typeClass=f.type==='excludes1'?'deny':'warn';
+      const typeLabel=f.type==='excludes1'?'Excludes1 Violation':'Warning';
+      html+=`<div class="result-card icd-result" data-type="${typeClass}">
+        <div class="result-header">
+          <span class="badge icd">${typeLabel}</span>
+          <span class="result-codes">${f.codes.join(' + ')}</span>
+          <span class="meta-tag">ICD-10</span>
+        </div>
+        <div class="result-reason">${f.reason}</div>
+        <div class="result-fix"><strong>Fix:</strong> ${f.fix}</div>
+      </div>`;
+    }
+  }
+
+  if(allResults===0&&!atNote){
+    html+=`<div class="result-card ok">
+      <div class="result-header"><span class="badge ok">No conflicts</span></div>
+      <div class="result-reason">No known bundling conflicts, NCCI edits, ICD-10 Excludes1 violations, or denial risks detected for this combination${activePayer!=='all'?' for '+activePayer:''}.</div>
+    </div>`;
+  }
+
+  html+='</div>';
+
+  // Modifier reference section
+  const allModsNeeded=[...new Set([
+    ...cptFound.flatMap(f=>f.modifiers||[]).map(m=>m.mod),
+    ...(atNote?['AT']:[])
+  ])];
+
+  if(allModsNeeded.length>0){
+    html+=`<div class="section-divider">Modifier reference</div>`;
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">';
+    allModsNeeded.forEach(m=>{
+      html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;margin-bottom:4px">${m}</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5">${modifierRef[m]||'See payer-specific guidelines.'}</div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+
+  html+=`<div style="font-size:11px;color:var(--text3);padding-top:10px;border-top:1px solid var(--border);line-height:1.6">
+    Rules based on Medicare NCCI edits, CMS chiropractic guidelines, ICD-10-CM Excludes1 tables, and common BCBS/commercial payer policies. Always verify against current NCCI tables and individual payer contracts. Not a substitute for professional billing advice. Last updated 2025.
+  </div>`;
+
+  res.innerHTML=html;
+}
+
+function filterRes(type,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#resultList .result-card').forEach(card=>{
+    if(type==='all'){card.style.display='block';return;}
+    const dt=card.dataset.type||'';
+    card.style.display=(dt.includes(type))?'block':'none';
+  });
+  document.querySelectorAll('#resultList .section-divider').forEach(d=>d.style.display=type==='all'?'flex':'none');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    if(document.activeElement===document.getElementById('cptInput'))addCPT();
+    if(document.activeElement===document.getElementById('icdInput'))addICD();
+  }
+});
+</script>
+
+</body>
+</html>
